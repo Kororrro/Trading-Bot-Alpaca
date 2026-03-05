@@ -8,15 +8,14 @@ from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 import numpy as np
 import json
 
-with open("account.json") as f:
+with open("Trading-Bot-Alpaca/account.json") as f:
     config = json.load(f)
 
 api_key = config["api_key"]
 sec_key = config["sec_key"]
 
 data_client = CryptoHistoricalDataClient()
-trading_client = TradingClient(api_key, sec_key, paper=True
-    )
+trading_client = TradingClient(api_key, sec_key, paper=True)
 
 ####################################        BUY/SELL Code
 def BuySell():
@@ -155,7 +154,7 @@ def main():
         case 4:
             print("Printing change with variables 30, Week: ")
             bars = GetHistory()
-            GetAverage(bars)
+            print(GetAverage(bars))
         case 5:
             SMA()
         case 6:
