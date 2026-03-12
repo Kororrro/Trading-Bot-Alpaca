@@ -17,6 +17,19 @@ sec_key = config["sec_key"]
 data_client = CryptoHistoricalDataClient()
 trading_client = TradingClient(api_key, sec_key, paper=True)
 
+####################################        Fetching data 
+def getAccount():
+    print("Getting account data")
+    account = trading_client.get_account()
+    aapl_position = trading_client.get_open_position('AAPL')
+
+    # Get a list of all of our positions.
+    portfolio = trading_client.get_all_positions()
+
+    # Print the quantity of shares for each position.
+    for position in portfolio:
+        print("{} shares of {}".format(position.qty, position.symbol))
+
 ####################################        BUY/SELL Code
 def BuySell():
     valInput = input("Buy or sell: ")
