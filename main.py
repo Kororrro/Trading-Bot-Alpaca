@@ -13,11 +13,31 @@ with open("Trading-Bot-Alpaca/account.json") as f:
 
 api_key = config["api_key"]
 sec_key = config["sec_key"]
+gmail_user = config["gmail_user"]
+gmail_pwd = config["gmail_pwd"]
+recipients = config["recipient"]
 
 data_client = CryptoHistoricalDataClient()
 trading_client = TradingClient(api_key, sec_key, paper=True)
 
-####################################        Fetching data 
+def sendEmail(user, pwd, recipient, custom=""):
+    import smtplib
+    subject = "test"
+    text = "Sent from python script\n%s" % (custom)
+    FROM = user
+    TO = recipient
+
+    message = """From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (FROM, ", ".join(TO), subject, text)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(user,pwd)
+            server.sendmail(FROM, TO, message)
+            print ("Successfully sent mail")
+    except:
+        print("Failed sending mail")
+    
+####################################        Fetching data       #################################### 
 def getAccount():
     print("Getting account data")
     account = trading_client.get_account()
@@ -30,7 +50,7 @@ def getAccount():
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
-####################################        BUY/SELL Code
+####################################        BUY/SELL Code       #################################### 
 def BuySell():
     valInput = input("Buy or sell: ")
     # preparing market order
@@ -63,7 +83,7 @@ def BuySell():
     else:
         print(f"Error: invalid input value - {valInput}")
 
-####################################        Historical Data Code
+####################################        Historical Data Code          #################################### 
 def GetQuoutes():
     quotesRequest = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
     eth_quotes = data_client.get_crypto_latest_quote(quotesRequest)
@@ -101,7 +121,7 @@ def GetAverage(bars, debug=False):
     # print(f"BarsArr: {barsArr}\nArray length: {len(barsArr)}\nAverage: {change}")
     return change
 
-####################################        Predictions
+####################################        Predictions         #################################### 
 def SMA():
     shortBars = GetHistory(30, "Day")
     longBars = GetHistory(60, "Day")
@@ -136,9 +156,7 @@ def EMA(barsStart, barsWhole, debug=False):
             emaToday = 0
     print(f"EMA Today: {emaToday}")
         
-
-
-####################################        Main
+####################################        Main        #################################### 
 def main():
     message = """
     1 - Get Bars
@@ -147,6 +165,7 @@ def main():
     4 - Get raw Average
     5 - SMA
     6 - EMA
+    7 - Mail
     0 - Tests"""
     print(message)
     usrInp = int(input("Choose one of the above: "))
@@ -174,6 +193,9 @@ def main():
             bars1 = GetHistory(15,"Day",12)
             bars2 = GetHistory(12,"Day")
             EMA(bars1,bars2)
+        case 7:
+            bars = GetHistory().df
+            sendEmail(gmail_user, gmail_pwd, recipients, bars)
         case 0:
             print("Tests")
 
