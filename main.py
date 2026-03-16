@@ -1,24 +1,24 @@
-from datetime import datetime, timedelta
-from alpaca.data.historical import CryptoHistoricalDataClient
-from alpaca.data.requests import CryptoBarsRequest, CryptoLatestQuoteRequest, CryptoLatestBarRequest
-from alpaca.data.timeframe import TimeFrame
-from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import GetAssetsRequest, MarketOrderRequest, LimitOrderRequest 
-from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 import numpy as np
-import json
 
-with open("Trading-Bot-Alpaca/account.json") as f:
-    config = json.load(f)
+def initializeVariables():
+    from alpaca.data.historical import CryptoHistoricalDataClient
+    from alpaca.trading.client import TradingClient
+    import json
 
-api_key = config["api_key"]
-sec_key = config["sec_key"]
-gmail_user = config["gmail_user"]
-gmail_pwd = config["gmail_pwd"]
-recipients = config["recipient"]
+    with open("Trading-Bot-Alpaca/account.json") as f:
+        config = json.load(f)
 
-data_client = CryptoHistoricalDataClient()
-trading_client = TradingClient(api_key, sec_key, paper=True)
+    api_key = config["api_key"]
+    sec_key = config["sec_key"]
+    gmail_user = config["gmail_user"]
+    gmail_pwd = config["gmail_pwd"]
+    recipients = config["recipient"]
+    trading_client = TradingClient(api_key, sec_key, paper=True)
+    data_client = CryptoHistoricalDataClient()
+
+    return trading_client, data_client, gmail_user, gmail_pwd, recipients
+
+trading_client, data_client, gmail_user, gmail_pwd, recipients = initializeVariables()
 
 def sendEmail(user, pwd, recipient, custom=""):
     import smtplib
@@ -38,6 +38,7 @@ def sendEmail(user, pwd, recipient, custom=""):
         print("Failed sending mail")
     
 ####################################        Fetching data       #################################### 
+
 def getAccount():
     print("Getting account data")
     account = trading_client.get_account()
@@ -53,13 +54,18 @@ def getAccount():
 --------------------------   Printing portfolio  -------------------------
 {portfolio}
 """)
+
     # Print the quantity of shares for each position.
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
 ####################################        BUY/SELL Code       #################################### 
+
 def BuySell():
+    from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest 
+    from alpaca.trading.enums import OrderSide, TimeInForce
     valInput = input("Buy or sell: ")
+
     # preparing market order
     market_order_data = MarketOrderRequest(
         symbol="ETH",
@@ -67,6 +73,7 @@ def BuySell():
         side=OrderSide.BUY,
         time_in_force=TimeInForce.IOC
     )
+
     # preparing a limit order
     limit_order_data = LimitOrderRequest(
         symbol="ETH",
@@ -75,6 +82,7 @@ def BuySell():
         side=OrderSide.SELL,
         time_in_force=TimeInForce.GTC
     )
+
     if valInput == "buy":
         print(f"buy: {valInput}")
         # sending an order
@@ -91,27 +99,35 @@ def BuySell():
         print(f"Error: invalid input value - {valInput}")
 
 ####################################        Historical Data Code          #################################### 
+
 def GetQuoutes():
+    from alpaca.data.requests import CryptoLatestQuoteRequest
     quotesRequest = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
     eth_quotes = data_client.get_crypto_latest_quote(quotesRequest)
     print(f"Printing eth quotes:\n{eth_quotes}")
 
 ####################
+
 def GetHistory(timelength = 30, frame = "Week", stop=0, debug=False):
+    from alpaca.data.timeframe import TimeFrame
+    from alpaca.data.requests import CryptoBarsRequest
+    from datetime import datetime, timedelta
     # We're getting the bars from last month in a specific 
     # timeframe and then we return the bars we fetched
     now = datetime.now()
     delta = timedelta(timelength)
     stop = timedelta(stop)
+
     if debug:
         print(f"Now\t\tdelta\t\tstop\n{now}\t{delta}\t{stop}")
     #Set the options to get
     request_params = CryptoBarsRequest(
     symbol_or_symbols=["ETH/USD"],
-    timeframe=getattr(TimeFrame, frame, "Day"),
+    timeframe=getattr(TimeFrame, frame),
     start=now-delta,
     end=now-stop
     )
+
     #Get price
     eth_bars = data_client.get_crypto_bars(request_params)
     if debug:
@@ -119,6 +135,7 @@ def GetHistory(timelength = 30, frame = "Week", stop=0, debug=False):
     return eth_bars
 
 #####################
+
 def GetAverage(bars, debug=False):
     CloseSum = 0
     barsArr =  bars.df["close"].values
@@ -129,11 +146,13 @@ def GetAverage(bars, debug=False):
     return change
 
 ####################################        Predictions         #################################### 
+
 def SMA():
     shortBars = GetHistory(30, "Day")
     longBars = GetHistory(60, "Day")
     shortAverage = GetAverage(shortBars)
     longAverage = GetAverage(longBars)
+
     if shortAverage > longAverage:
         print("Trend upward")
     elif longAverage > shortAverage:
@@ -164,6 +183,7 @@ def EMA(barsStart, barsWhole, debug=False):
     print(f"EMA Today: {emaToday}")
         
 ####################################        Main        #################################### 
+
 def main():
     message = """
     1 - Get Bars
@@ -177,6 +197,7 @@ def main():
     0 - Tests"""
     print(message)
     usrInp = int(input("Choose one of the above: "))
+
     match usrInp:
         case 1:
             try:
@@ -213,6 +234,7 @@ main()
 
 
 """
+CryptoLatestBarRequest
 if x:
     #Search for US equities
     search_params = GetAssetsRequest(asset_class=AssetClass.US_EQUITY,tradable=True)
