@@ -41,11 +41,18 @@ def sendEmail(user, pwd, recipient, custom=""):
 def getAccount():
     print("Getting account data")
     account = trading_client.get_account()
-    aapl_position = trading_client.get_open_position('AAPL')
+    eth_position = trading_client.get_open_position('ETH')
 
     # Get a list of all of our positions.
     portfolio = trading_client.get_all_positions()
-
+    print(f"""
+--------------------------   Printing account   --------------------------
+{account}
+--------------------------   Printing position  --------------------------
+{eth_position}
+--------------------------   Printing portfolio  -------------------------
+{portfolio}
+""")
     # Print the quantity of shares for each position.
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
@@ -166,6 +173,7 @@ def main():
     5 - SMA
     6 - EMA
     7 - Mail
+    8 - getAccount
     0 - Tests"""
     print(message)
     usrInp = int(input("Choose one of the above: "))
@@ -196,6 +204,8 @@ def main():
         case 7:
             bars = GetHistory().df
             sendEmail(gmail_user, gmail_pwd, recipients, bars)
+        case 8:
+            getAccount()
         case 0:
             print("Tests")
 
