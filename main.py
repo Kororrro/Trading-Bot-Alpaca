@@ -108,7 +108,7 @@ def GetQuoutes():
 
 ####################
 
-def GetHistory(timelength = 30, frame = "Week", stop=0, debug=False):
+def GetHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):
     from alpaca.data.timeframe import TimeFrame
     from alpaca.data.requests import CryptoBarsRequest
     from datetime import datetime, timedelta
@@ -122,7 +122,7 @@ def GetHistory(timelength = 30, frame = "Week", stop=0, debug=False):
         print(f"Now\t\tdelta\t\tstop\n{now}\t{delta}\t{stop}")
     #Set the options to get
     request_params = CryptoBarsRequest(
-    symbol_or_symbols=["ETH/USD"],
+    symbol_or_symbols=currencies,
     timeframe=getattr(TimeFrame, frame),
     start=now-delta,
     end=now-stop
@@ -203,7 +203,11 @@ def main():
             try:
                 timelengthInput = int(input("Enter timelength (int): "))
                 frameInput = input("Enter frame (Hour,Day,Week,Month): ").lower().capitalize()
-                bars = GetHistory(timelengthInput, frameInput)
+                coins = []
+                coinsInput = input("Input what currencies' bars you want: ").split()
+                for i in range(len(coinsInput)):
+                    coins.append(coinsInput[i])
+                bars = GetHistory(coins, timelengthInput, frameInput)
             except:
                 print("\nError: Invalid input data. Using default parameters for fetching bars")
                 bars = GetHistory()
@@ -230,7 +234,8 @@ def main():
         case 0:
             print("Tests")
 
-main()
+if __name__ == '__main__':
+    main()
 
 
 """
