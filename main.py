@@ -148,8 +148,8 @@ def GetAverage(bars, debug=False):
 ####################################        Predictions         #################################### 
 
 def SMA():
-    shortBars = GetHistory(30, "Day")
-    longBars = GetHistory(60, "Day")
+    shortBars = GetHistory(timelength=30, frame="Day")
+    longBars = GetHistory(timelength=60, frame="Day")
     shortAverage = GetAverage(shortBars)
     longAverage = GetAverage(longBars)
 
@@ -223,8 +223,8 @@ def main():
         case 5:
             SMA()
         case 6:
-            bars1 = GetHistory(15,"Day",12)
-            bars2 = GetHistory(12,"Day")
+            bars1 = GetHistory(timelength=15,frame="Day",stop=12)
+            bars2 = GetHistory(timelength=12,frame="Day")
             EMA(bars1,bars2)
         case 7:
             bars = GetHistory().df
