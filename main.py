@@ -59,6 +59,40 @@ def getAccount():
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
+def GetQuoutes():
+    from alpaca.data.requests import CryptoLatestQuoteRequest
+    quotesRequest = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
+    eth_quotes = data_client.get_crypto_latest_quote(quotesRequest)
+    print(f"Printing eth quotes:\n{eth_quotes}")
+
+####################
+
+def GetHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):
+    from alpaca.data.timeframe import TimeFrame
+    from alpaca.data.requests import CryptoBarsRequest
+    from datetime import datetime, timedelta
+    # We're getting the bars from last month in a specific 
+    # timeframe and then we return the bars we fetched
+    now = datetime.now()
+    delta = timedelta(timelength)
+    stop = timedelta(stop)
+
+    if debug:
+        print(f"Now\t\tdelta\t\tstop\n{now}\t{delta}\t{stop}")
+    #Set the options to get
+    request_params = CryptoBarsRequest(
+    symbol_or_symbols=currencies,
+    timeframe=getattr(TimeFrame, frame),
+    start=now-delta,
+    end=now-stop
+    )
+
+    #Get price
+    eth_bars = data_client.get_crypto_bars(request_params)
+    if debug:
+        print(f"Printing eth bars:\n{eth_bars}")
+    return eth_bars
+
 ####################################        BUY/SELL Code       #################################### 
 
 def BuySell():
@@ -98,43 +132,8 @@ def BuySell():
     else:
         print(f"Error: invalid input value - {valInput}")
 
-####################################        Historical Data Code          #################################### 
 
-def GetQuoutes():
-    from alpaca.data.requests import CryptoLatestQuoteRequest
-    quotesRequest = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
-    eth_quotes = data_client.get_crypto_latest_quote(quotesRequest)
-    print(f"Printing eth quotes:\n{eth_quotes}")
-
-####################
-
-def GetHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):
-    from alpaca.data.timeframe import TimeFrame
-    from alpaca.data.requests import CryptoBarsRequest
-    from datetime import datetime, timedelta
-    # We're getting the bars from last month in a specific 
-    # timeframe and then we return the bars we fetched
-    now = datetime.now()
-    delta = timedelta(timelength)
-    stop = timedelta(stop)
-
-    if debug:
-        print(f"Now\t\tdelta\t\tstop\n{now}\t{delta}\t{stop}")
-    #Set the options to get
-    request_params = CryptoBarsRequest(
-    symbol_or_symbols=currencies,
-    timeframe=getattr(TimeFrame, frame),
-    start=now-delta,
-    end=now-stop
-    )
-
-    #Get price
-    eth_bars = data_client.get_crypto_bars(request_params)
-    if debug:
-        print(f"Printing eth bars:\n{eth_bars}")
-    return eth_bars
-
-#####################
+####################################        Calculations         #################################### 
 
 def GetAverage(bars, debug=False):
     CloseSum = 0
@@ -144,8 +143,6 @@ def GetAverage(bars, debug=False):
     change = CloseSum / len(barsArr)
     # print(f"BarsArr: {barsArr}\nArray length: {len(barsArr)}\nAverage: {change}")
     return change
-
-####################################        Predictions         #################################### 
 
 def SMA():
     shortBars = GetHistory(timelength=30, frame="Day")
