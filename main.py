@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLOGGER(__name__)
 logging.basicConfig(format='%(asctime)s %(message)s',filename='Bot.log', level=logging.INFO)
 
 def initializeVariables():
@@ -11,7 +11,7 @@ def initializeVariables():
 
     with open("Trading-Bot-Alpaca/account.json") as f:
         config = json.load(f)
-    logger.info("Reading initial variables")
+    LOGGER.info("Reading initial variables")
 
     api_key = config["api_key"]
     sec_key = config["sec_key"]
@@ -23,17 +23,17 @@ def initializeVariables():
 
     return trading_client, data_client, gmail_user, gmail_pwd, recipients
 
-trading_client, data_client, gmail_user, gmail_pwd, recipients = initializeVariables()
+TRADING_CLIENT, DATA_CLIENT, GMAIL_USER, GMAIL_PWD, RECIPIENTS = initializeVariables()
 
 ####################################        Email        #################################### 
 
-def sendEmail(user, pwd, recipient, custom=""):
+def sendEmail(user, pwd, RECIPIENT, custom=""):
     import smtplib
-    logger.info("Trying to send an email")
+    LOGGER.info("Trying to send an email")
     subject = "test"
     text = "Sent from python script\n%s" % (custom)
     FROM = user
-    TO = recipient
+    TO = RECIPIENT
 
     message = """From: %s\nTo: %s\nSubject: %s\n\n%s
     """ % (FROM, ", ".join(TO), subject, text)
@@ -41,19 +41,19 @@ def sendEmail(user, pwd, recipient, custom=""):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(user,pwd)
             server.sendmail(FROM, TO, message)
-            logger.info("Successfully sent email")
+            LOGGER.info("Successfully sent email")
     except:
-        logger.info("Failed to send an email")
+        LOGGER.info("Failed to send an email")
     
 ####################################        Fetching data       #################################### 
 
 def getAccount():
-    logger.info("Getting account data")
-    account = trading_client.get_account()
-    eth_position = trading_client.get_open_position('ETH')
+    LOGGER.info("Getting account data")
+    account = TRADING_CLIENT.get_account()
+    eth_position = TRADING_CLIENT.get_open_position('ETH')
 
     # Get a list of all of our positions.
-    portfolio = trading_client.get_all_positions()
+    portfolio = TRADING_CLIENT.get_all_positions()
     print(f"""
 --------------------------   Printing account   --------------------------
 {account}
@@ -67,21 +67,21 @@ def getAccount():
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
-def GetQuoutes():
+def getQuoutes():
     from alpaca.data.requests import CryptoLatestQuoteRequest
-    logger.info("Requesting latest quotes")
-    quotesRequest = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
-    eth_quotes = data_client.get_crypto_latest_quote(quotesRequest)
+    LOGGER.info("Requesting latest quotes")
+    quotes_request = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
+    eth_quotes = DATA_CLIENT.get_crypto_latest_quote(quotes_request)
     print(f"Printing eth quotes:\n{eth_quotes}")
 
 ####################
 
-def GetHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):
+def getHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):
     from alpaca.data.timeframe import TimeFrame
     from alpaca.data.requests import CryptoBarsRequest
     from datetime import datetime, timedelta
 
-    logger.info(f"Fetching history data of {currencies}")
+    LOGGER.info(f"Fetching history data of {currencies}")
     # We're getting the bars from last month in a specific 
     # timeframe and then we return the bars we fetched
     now = datetime.now()
@@ -99,17 +99,17 @@ def GetHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, 
     )
 
     #Get price
-    eth_bars = data_client.get_crypto_bars(request_params)
+    eth_bars = DATA_CLIENT.get_crypto_bars(request_params)
     if debug:
         print(f"Printing eth bars:\n{eth_bars}")
     return eth_bars
 
 ####################################        BUY/SELL Code       #################################### 
 
-def BuySell():
+def buySell():
     from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest 
     from alpaca.trading.enums import OrderSide, TimeInForce
-    valInput = input("Buy or sell: ")
+    val_input = input("Buy or sell: ")
 
     # preparing market order
     market_order_data = MarketOrderRequest(
@@ -128,26 +128,26 @@ def BuySell():
         time_in_force=TimeInForce.GTC
     )
 
-    if valInput == "buy":
-        logger.info(f"buying {valInput}")
+    if val_input == "buy":
+        LOGGER.info(f"buying {valInput}")
         # sending an order
-        market_order = trading_client.submit_order(
+        market_order = TRADING_CLIENT.submit_order(
             order_data=market_order_data
         )
-    elif valInput == "sell":
+    elif val_input == "sell":
         print(f"Selling {valInput}")
         # submitting a limit order
-        limit_order = trading_client.submit_order(
+        limit_order = TRADING_CLIENT.submit_order(
             order_data=limit_order_data
             )
     else:
-        print(f"Error: invalid input value - {valInput}")
+        print(f"Error: invalid input value - {val_input}")
 
 
 ####################################        Calculations         #################################### 
 
-def GetAverage(bars, debug=False):
-    logger.info("Calculating basic average")
+def getAverage(bars, debug=False):
+    LOGGER.info("Calculating basic average")
     CloseSum = 0
     barsArr =  bars.df["close"].values
     for i in barsArr:
@@ -158,12 +158,12 @@ def GetAverage(bars, debug=False):
 
 ####################
 
-def SMA(asset):
-    logger.info("Calculating SMA")
-    shortBars = GetHistory(currencies=asset,timelength=30, frame="Day")
-    longBars = GetHistory(currencies=asset, timelength=60, frame="Day")
-    shortAverage = GetAverage(shortBars)
-    longAverage = GetAverage(longBars)
+def calculateSMA(asset):
+    LOGGER.info("Calculating calculateSMA")
+    shortBars = getHistory(currencies=asset,timelength=30, frame="Day")
+    longBars = getHistory(currencies=asset, timelength=60, frame="Day")
+    shortAverage = getAverage(shortBars)
+    longAverage = getAverage(longBars)
 
     if shortAverage > longAverage:
         print("Trend upward")
@@ -177,18 +177,18 @@ def SMA(asset):
 
 ####################
 
-def EMA(barsStart, barsWhole, debug=False):
-    logger.info("Calculating EMA")
+def calculateEMA(barsStart, barsWhole, debug=False):
+    LOGGER.info("Calculating EMA")
     barValues = barsWhole.df["close"].values
     barValuesLength = len(barValues)
-    startAverage = GetAverage(barsStart)
+    startAverage = getAverage(barsStart)
     smoothing = 2
     emaToday = 0
     emaYesterday = startAverage
     alpha = smoothing/(1+barValuesLength)
 
     if debug:
-        print(f"Bar Values: {barValues}\nBarValues len: {barValuesLength}\nalpha: {alpha}\nSMA: {startAverage}")
+        print(f"Bar Values: {barValues}\nBarValues len: {barValuesLength}\nalpha: {alpha}\ncalculateSMA: {startAverage}")
     for i in range(1,barValuesLength):
         emaToday = barValues[i]*(alpha)+emaYesterday*(1-alpha)
         if debug:
@@ -203,16 +203,16 @@ def EMA(barsStart, barsWhole, debug=False):
 
 def getAssetsToBuy():
     from alpaca.trading.requests import AssetClass, GetAssetsRequest
-    logger.info("Determiting assets available for purchase")
+    LOGGER.info("Determiting assets available for purchase")
 
     search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO, tradable=True)
-    assets = trading_client.get_all_assets(search_params)
+    assets = TRADING_CLIENT.get_all_assets(search_params)
     # print(assets)
     upwardAssets = []
 
     for i in assets:
         # print(f"\n\nI\n\n{i}")
-        trend = SMA(i.symbol)
+        trend = calculateSMA(i.symbol)
         if trend == 1:
             upwardAssets.append(i.symbol)
         else:
@@ -221,7 +221,7 @@ def getAssetsToBuy():
 
 
 def runBot():
-    logger.info("Running TradingBot 1.0")
+    LOGGER.info("Running TradingBot 1.0")
 
 ####################################        Main        #################################### 
 
@@ -231,7 +231,7 @@ def main():
     2 - Buy/Sell
     3 - Get latest quoutes
     4 - Get raw Average
-    5 - SMA
+    5 - calculateSMA
     6 - EMA
     7 - Mail
     8 - getAccount
@@ -249,28 +249,28 @@ def main():
                 coinsInput = input("Input what currencies' bars you want: ").split()
                 for i in range(len(coinsInput)):
                     coins.append(coinsInput[i])
-                bars = GetHistory(coins, timelengthInput, frameInput)
+                bars = getHistory(coins, timelengthInput, frameInput)
             except:
                 print("\nError: Invalid input data. Using default parameters for fetching bars")
-                bars = GetHistory()
+                bars = getHistory()
             print(bars.df)
         case 2:
-            BuySell()
+            buySell()
         case 3:
-            GetQuoutes()
+            getQuoutes()
         case 4:
             print("Printing change with variables 30, Week: ")
-            bars = GetHistory()
-            print(GetAverage(bars))
+            bars = getHistory()
+            print(getAverage(bars))
         case 5:
-            SMA()
+            calculateSMA()
         case 6:
-            bars1 = GetHistory(timelength=15,frame="Day",stop=12)
-            bars2 = GetHistory(timelength=12,frame="Day")
-            EMA(bars1,bars2)
+            bars1 = getHistory(timelength=15,frame="Day",stop=12)
+            bars2 = getHistory(timelength=12,frame="Day")
+            calculateEMA(bars1,bars2)
         case 7:
-            bars = GetHistory().df
-            sendEmail(gmail_user, gmail_pwd, recipients, bars)
+            bars = getHistory().df
+            sendEmail(GMAIL_USER, GMAIL_PWD, RECIPIENTS, bars)
         case 8:
             getAccount()
         case 9:
@@ -290,7 +290,7 @@ if x:
     #Search for US equities
     search_params = GetAssetsRequest(asset_class=AssetClass.US_EQUITY,tradable=True)
     #Search for AAPL
-    aapl_asset = trading_client.get_asset('AAPL')
+    aapl_asset = TRADING_CLIENT.get_asset('AAPL')
     print(f"Printing AAPL:\n{aapl_asset}")
 
     #Print all assets
@@ -298,7 +298,7 @@ if x:
     f = open("assets.txt", 'w')
     except:
     f = open("assets.txt", 'x')
-    assets = trading_client.get_all_assets(search_params)
+    assets = TRADING_CLIENT.get_all_assets(search_params)
     print(f"\nPrinting assets: {assets}")
     for elem in assets:
     if elem.status == "active" and elem.tradable == True:
