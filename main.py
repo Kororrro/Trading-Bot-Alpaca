@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-LOGGER = logging.getLOGGER(__name__)
+LOGGER = logging.getLogger(__name__)
 logging.basicConfig(format='%(asctime)s %(message)s',filename='Bot.log', level=logging.INFO)
 
 def initializeVariables():
@@ -67,12 +67,13 @@ def getAccount():
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
-def getQuoutes():
+def getQuoutes(coin=["ETH/USD"]):
     from alpaca.data.requests import CryptoLatestQuoteRequest
     LOGGER.info("Requesting latest quotes")
-    quotes_request = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=["ETH/USD"])
-    eth_quotes = DATA_CLIENT.get_crypto_latest_quote(quotes_request)
-    print(f"Printing eth quotes:\n{eth_quotes}")
+    quotes_request = CryptoLatestQuoteRequest(loc="us-1", symbol_or_symbols=coin)
+    coin_quotes = DATA_CLIENT.get_crypto_latest_quote(quotes_request)
+    print(f"Printing {coin} quotes:\n{coin_quotes}")
+    return coin_quotes
 
 ####################
 
@@ -199,7 +200,7 @@ def calculateEMA(barsStart, barsWhole, debug=False):
             emaToday = 0
     print(f"EMA Today: {emaToday}")
         
-####################################        Logic        #################################### 
+####################################        Logics        #################################### 
 
 def getAssetsToBuy():
     from alpaca.trading.requests import AssetClass, GetAssetsRequest
@@ -208,16 +209,27 @@ def getAssetsToBuy():
     search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO, tradable=True)
     assets = TRADING_CLIENT.get_all_assets(search_params)
     # print(assets)
-    upwardAssets = []
+    upward_assets = []
+    cheap_assets = {}
 
     for i in assets:
         # print(f"\n\nI\n\n{i}")
         trend = calculateSMA(i.symbol)
         if trend == 1:
-            upwardAssets.append(i.symbol)
+            upward_assets.append(i.symbol)
         else:
             continue
-    return upwardAssets
+
+    for i in assets:
+        quoute = getQuoutes(i.symbol)
+        quoute_price = quoute[i.symbol].bid_price
+        if quoute_price < 20:
+            cheap_assets[i.symbol] = quoute_price
+        else:
+            continue
+
+    print(f"Assets with upwards trend: {upward_assets}")
+    print(f"Cheap assets (up to 20 dollars): {cheap_assets}")
 
 
 def runBot():
