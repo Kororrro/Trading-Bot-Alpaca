@@ -160,76 +160,6 @@ def getAverage(bars, debug=False):
     # print(f"BarsArr: {barsArr}\nArray length: {len(barsArr)}\nAverage: {change}")
     return change
 
-####################
-
-def calculateSMA(asset):
-    LOGGER.info("Calculating SMA")
-    shortBars = getHistory(currencies=asset,timelength=30, frame="Day")
-    longBars = getHistory(currencies=asset, timelength=60, frame="Day")
-    shortAverage = getAverage(shortBars)
-    longAverage = getAverage(longBars)
-
-    if shortAverage > longAverage:
-        print("Trend upward")
-        return 1
-    elif longAverage > shortAverage:
-        print("Trend downward")
-        return 0
-    else:
-        print("Either the trend is sideways or something went wrong, so here's a hint for you love ;*")
-        print(f"long: {longAverage}\nshort: {shortAverage}")
-
-####################
-
-def calculateEMA(barsStart, barsWhole, debug=False):
-    LOGGER.info("Calculating EMA")
-    barValues = barsWhole.df["close"].values
-    barValuesLength = len(barValues)
-    startAverage = getAverage(barsStart)
-    smoothing = 2
-    emaToday = 0
-    emaYesterday = startAverage
-    alpha = smoothing/(1+barValuesLength)
-
-    if debug:
-        print(f"Bar Values: {barValues}\nBarValues len: {barValuesLength}\nalpha: {alpha}\ncalculateSMA: {startAverage}")
-    for i in range(1,barValuesLength):
-        emaToday = barValues[i]*(alpha)+emaYesterday*(1-alpha)
-        if debug:
-            print(f"values\t\tEMA today\t\tEMA yesterday")
-            print(f"{i}\t\t{emaToday}\t\t{emaYesterday}")
-        emaYesterday = emaToday
-        if i+1 != barValuesLength:
-            emaToday = 0
-    print(f"EMA Today: {emaToday}")
-        
-####################
-
-def CalculateRSI(timelength = 14):
-    LOGGER.info("Calculating RSI")
-    currency = ["BTC/USD"]
-    bars = getHistory(currencies=currency, timelength=timelength+14, frame="Day")
-    gain = 0
-    loss = 0
-    for day in range(14):
-        if day == 0:
-            continue
-        close_today = bars[currency[0]][day].close
-        close_yesterday = bars[currency[0]][day-1].close
-        diff = close_today - close_yesterday
-
-        if diff > 0:
-            gain += diff
-        else:
-            loss += diff
-    loss *= -1
-    print(f"gain: {gain}\nloss: {loss}")
-    avg_gain = gain/timelength
-    avg_loss = loss/timelength
-    rs = avg_gain/avg_loss
-    rsi = 100 - (100/(1+rs))
-    print(f"RS: {rs}\nRSI: {rsi}")
-
 
 ####################################        Logics        #################################### 
 
@@ -245,7 +175,7 @@ def getAssetsToBuy():
 
     for i in assets:
         # print(f"\n\nI\n\n{i}")
-        trend = calculateSMA(i.symbol)
+        # trend = calculateSMA(i.symbol)
         if trend == 1:
             upward_assets.append(i.symbol)
         else:
@@ -262,6 +192,43 @@ def getAssetsToBuy():
     print(f"Assets with upwards trend: {upward_assets}")
     print(f"Cheap assets (up to 20 dollars): {cheap_assets}")
 
+####################################        Plotly        #################################### 
+
+def makeAGraph(stockdf):
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    from datetime import datetime
+    st=0
+    dfpl = stockdf[st:st+50]
+    dfpl.reset_index(inplace=True)
+
+    fig = go.Figure(
+        data=[go.Candlestick(x=dfpl.index,
+                            open=dfpl['open'],
+                            high=dfpl['high'],
+                            low=dfpl['low'],
+                            close=dfpl['close']),
+                    
+
+                go.Scatter(x=dfpl.index, y=dfpl['ema:50'], 
+                           line=dict(color='green', width=1), 
+                           name="ema 50"),
+                go.Scatter(x=dfpl.index, y=dfpl['ema:30'], 
+                           line=dict(color='green', width=1), 
+                           name="ema 30"),
+                go.Scatter(x=dfpl.index, y=dfpl['rsi:14'], 
+                           line=dict(color='black', width=1), 
+                           name="rsi")
+            ],
+        layout_yaxis_range=[1500,2500]
+    )
+
+    # fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
+    #                 marker=dict(size=5, color="MediumPurple"),
+    #                 name="entry")
+
+    fig.show()
+
 ####################################        Main        #################################### 
 
 def main():
@@ -270,8 +237,6 @@ def main():
     2 - Buy/Sell
     3 - Get latest quoutes
     4 - Get raw Average
-    5 - calculateSMA
-    6 - EMA
     7 - Mail
     8 - getAccount
     9 - Run automated
@@ -308,12 +273,6 @@ def main():
             print("Printing change with variables 30, Week: ")
             bars = getHistory()
             print(getAverage(bars))
-        case 5:
-            calculateSMA()
-        case 6:
-            bars1 = getHistory(timelength=15,frame="Day",stop=12)
-            bars2 = getHistory(timelength=12,frame="Day")
-            calculateEMA(bars1, bars2)
         case 7:
             bars = getHistory().df
             sendEmail(GMAIL_USER, GMAIL_PWD, RECIPIENTS, bars)
@@ -322,10 +281,22 @@ def main():
         case 9:
             runBot()
         case 0:
-            print("Tests")
-            # x=getAssetsToBuy()
-            x=CalculateRSI()
-            # print(x)
+            # print("Tests")
+            # # x=getAssetsToBuy()
+            # # print(x)
+            import pandas as pd
+            from stock_pandas import StockDataFrame
+
+            barsdf = getHistory(timelength=50, frame="Day").df
+            stock = StockDataFrame(barsdf)
+            bars1 = getHistory( timelength=30, frame="Day", stop=20)
+            bars2= getHistory(timelength=20, frame="Day")
+            stock['ema:50']
+            stock['ema:30']
+            stock['rsi:14']
+            print(stock["ema:30"])
+
+
 
 if __name__ == '__main__':
     main()
