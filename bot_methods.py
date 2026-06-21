@@ -68,6 +68,8 @@ def getAccount():
     for position in portfolio:
         print("{} shares of {}".format(position.qty, position.symbol))
 
+####################
+
 def getQuoutes(coin=["ETH/USD"]):
     from alpaca.data.requests import CryptoLatestQuoteRequest
     LOGGER.info("Requesting latest quotes")
@@ -203,8 +205,32 @@ def calculateEMA(barsStart, barsWhole, debug=False):
         
 ####################
 
-def CalculateRSI():
+def CalculateRSI(timelength = 14):
     LOGGER.info("Calculating RSI")
+    currency = ["BTC/USD"]
+    bars = getHistory(currencies=currency, timelength=timelength+14, frame="Day")
+    gain = 0
+    loss = 0
+    for day in range(14):
+        if day == 0:
+            continue
+        close_today = bars[currency[0]][day].close
+        close_yesterday = bars[currency[0]][day-1].close
+        diff = close_today - close_yesterday
+
+        if diff > 0:
+            gain += diff
+        else:
+            loss += diff
+    loss *= -1
+    print(f"gain: {gain}\nloss: {loss}")
+    avg_gain = gain/timelength
+    avg_loss = loss/timelength
+    rs = avg_gain/avg_loss
+    rsi = 100 - (100/(1+rs))
+    print(f"RS: {rs}\nRSI: {rsi}")
+
+
 ####################################        Logics        #################################### 
 
 def getAssetsToBuy():
@@ -297,8 +323,9 @@ def main():
             runBot()
         case 0:
             print("Tests")
-            x=getAssetsToBuy()
-            print(x)
+            # x=getAssetsToBuy()
+            x=CalculateRSI()
+            # print(x)
 
 if __name__ == '__main__':
     main()
