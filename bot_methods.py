@@ -103,10 +103,10 @@ def getHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, 
     )
 
     #Get price
-    eth_bars = DATA_CLIENT.get_crypto_bars(request_params)
+    bars = DATA_CLIENT.get_crypto_bars(request_params)
     if debug == True:
-        print(f"Printing eth bars:\n{eth_bars}")
-    return eth_bars
+        print(f"Printing eth bars:\n{bars}")
+    return bars
 
 ####################################        BUY/SELL Code       #################################### 
 
