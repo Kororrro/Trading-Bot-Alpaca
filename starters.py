@@ -34,6 +34,20 @@ def fetchDailyBars():
 
 def fetchHourlyBars():
     frame="Hour"
+    timelength=3
+    bars_df = bm.getHistory(timelength=timelength, frame=frame).df
+    hourly_df = StockDataFrame(bars_df)
+
+    hourly_df['ema:50']
+    hourly_df['ema:20']
+    hourly_df['rsi:20']
+    print(hourly_df)
+    return hourly_df
+
+
+def fetchQuoute():
+    print("Fetching quoute")
+    bm.getQuoutes()
     
 def signalTrendfollowing():
     print("Signal for trend following")
