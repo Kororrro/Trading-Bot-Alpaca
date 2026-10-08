@@ -78,6 +78,17 @@ def getQuoutes(coin=["ETH/USD"]):
     print(f"Printing {coin} quotes:\n{coin_quotes}")
     return coin_quotes
 
+
+####################
+
+def getLatestBar(coin=["ETH/USD"]):
+    from alpaca.data.requests import CryptoLatestBarRequest
+    LOGGER.info("Requesting latest bar")
+    bar_request = CryptoLatestBarRequest(loc="us-1", symbol_or_symbols=coin)
+    coin_bar = DATA_CLIENT.get_crypto_latest_bar(bar_request)
+    print(f"Printing {coin} quotes:\n{coin_bar}")
+    return coin_bar
+
 ####################
 
 def getHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, debug=False):

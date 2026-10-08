@@ -22,14 +22,14 @@ Decide on the strategy best performing and continue testing.
 
 def fetchDailyBars():
     frame="Day"
-    timelength=100
+    timelength=55
     bars_df = bm.getHistory(timelength=timelength, frame=frame).df
     daily_df = StockDataFrame(bars_df)
 
     daily_df['ema:50']
     daily_df['ema:20']
     daily_df['rsi:20']
-    print(daily_df)
+    # print(daily_df)
     return daily_df
 
 def fetchHourlyBars():
@@ -44,15 +44,20 @@ def fetchHourlyBars():
     print(hourly_df)
     return hourly_df
 
-
-def fetchQuoute():
-    print("Fetching quoute")
-    bm.getQuoutes()
-    
 def signalTrendfollowing():
     print("Signal for trend following")
+    # dailybars_add=fetchDailyBars()
+    # quoute = bm.getQuoutes() -> QuoteSet returned
+    # dailybars_add.add(latest_bar)
+    # print(dailybars_add)
+    dailybars_append=fetchDailyBars()
+    print(f"dailybars:\n{dailybars_append}")
+    latest_bar = bm.getLatestBar()
+    dailybars_append.append(latest_bar)
+    print(f"dailybars_append:\n{dailybars_append}")
+
 
 def signalMeanReversion():
     print("Mean reversion")
 
-fetchDailyBars()
+signalTrendfollowing()
