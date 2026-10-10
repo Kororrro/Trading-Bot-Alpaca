@@ -46,18 +46,24 @@ def fetchHourlyBars():
 
 def signalTrendfollowing():
     print("Signal for trend following")
-    # dailybars_add=fetchDailyBars()
     # quoute = bm.getQuoutes() -> QuoteSet returned
     # dailybars_add.add(latest_bar)
-    # print(dailybars_add)
-    dailybars_append=fetchDailyBars()
-    print(f"dailybars:\n{dailybars_append}")
+    frame="Day"
+    timelength=55
+    dailybars_append=bm.getHistory(timelength=timelength, frame=frame)
+    print(f"dailybars:\n{dailybars_append.df}")
     latest_bar = bm.getLatestBar()
     dailybars_append.append(latest_bar)
-    print(f"dailybars_append:\n{dailybars_append}")
+    print(f"dailybars_append:\n{dailybars_append.df}")
+    dailybars_add=bm.getHistory(timelength=timelength, frame=frame)
+    dailybars_add += bm.getLatestBar()
+    print(dailybars_add.df)
 
 
 def signalMeanReversion():
     print("Mean reversion")
 
-signalTrendfollowing()
+bars = bm.getHistory()
+latest_bar = bm.getLatestBar()
+print(f"daily bars:\n{dict(bars)["data"]}\ntype: {type(dict(bars)["data"])}")
+print(f"latest bar:\n{latest_bar}\ntype: {type(latest_bar)}")
