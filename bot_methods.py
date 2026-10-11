@@ -86,7 +86,7 @@ def getLatestBar(coin=["ETH/USD"]):
     LOGGER.info("Requesting latest bar")
     bar_request = CryptoLatestBarRequest(loc="us-1", symbol_or_symbols=coin)
     coin_bar = DATA_CLIENT.get_crypto_latest_bar(bar_request)
-    print(f"Printing {coin} quotes:\n{coin_bar}")
+    # print(f"Printing {coin} quotes:\n{coin_bar}")
     return coin_bar
 
 ####################

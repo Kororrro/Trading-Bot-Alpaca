@@ -50,20 +50,29 @@ def signalTrendfollowing():
     # dailybars_add.add(latest_bar)
     frame="Day"
     timelength=55
-    dailybars_append=bm.getHistory(timelength=timelength, frame=frame)
-    print(f"dailybars:\n{dailybars_append.df}")
-    latest_bar = bm.getLatestBar()
-    dailybars_append.append(latest_bar)
-    print(f"dailybars_append:\n{dailybars_append.df}")
-    dailybars_add=bm.getHistory(timelength=timelength, frame=frame)
-    dailybars_add += bm.getLatestBar()
-    print(dailybars_add.df)
-
+    coin="ETH/USD"
+    daily_bars = bm.getHistory(currencies=[coin], frame="Day", timelength=3) # BarSet
+    latest_bar = bm.getLatestBar(coin=[coin]) #Dict
+    #Appending latest bar to the original data without changing it's structure
+    daily_bars_list = daily_bars.data[coin]
+    daily_bars_list.append(dict(latest_bar[coin])) # append on the end another element
+    # daily_bars_list.pop(-1) # Remove last element
 
 def signalMeanReversion():
     print("Mean reversion")
 
-bars = bm.getHistory()
-latest_bar = bm.getLatestBar()
-print(f"daily bars:\n{dict(bars)["data"]}\ntype: {type(dict(bars)["data"])}")
-print(f"latest bar:\n{latest_bar}\ntype: {type(latest_bar)}")
+def bars_addition():
+    coin="ETH/USD"
+    daily_bars = bm.getHistory(currencies=[coin], frame="Day", timelength=3) # BarSet
+    latest_bar = bm.getLatestBar(coin=[coin]) #Dict
+    #Appending latest bar to the original data without changing it's structure
+    daily_bars_list = daily_bars.data[coin]
+    daily_bars_list.append(dict(latest_bar[coin])) # append on the end another element
+    # daily_bars_list.pop(-1) # Remove last element
+    print(daily_bars)
+    """
+    Managed to append latest bar data into the daily bars list, and for that to work I had to strip away the data.
+    Now I have to either append the data without striping or to re-encapsulate the data in what it had before.
+    """
+
+bars_addition()
