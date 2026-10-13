@@ -20,53 +20,40 @@ Decide on the strategy best performing and continue testing.
 
 """
 
-def fetchDailyBars(frame="Day", timelength=55, coin="ETH/USD"):
+def fetchBars(frame="Day", timelength=55, coin="ETH/USD"):
     daily_bars = bm.getHistory(currencies=[coin], frame=frame, timelength=timelength) # BarSet
     latest_bar = bm.getLatestBar(coin=[coin]) #Dict
     #Appending latest bar to the original data without changing it's structure
-    daily_bars_list = daily_bars.data[coin]
-    daily_bars_list.append(latest_bar[coin]) # append on the end another element
+    # daily_bars_list = daily_bars.data[coin]
+    # daily_bars_list.append(latest_bar[coin]) # append on the end another element
     # daily_bars_list.pop(-1) # Remove last element
     daily_df = StockDataFrame(daily_bars.df)
     daily_df['ema:50']
     daily_df['ema:20']
     daily_df['rsi:20']
-    print(daily_df)
+    # print(daily_df)
     return daily_df
 
-def fetchHourlyBars():
-    frame="Hour"
-    timelength=3
-    bars_df = bm.getHistory(timelength=timelength, frame=frame)
-    print(bars_df)
-    print(type(bars_df))
-    hourly_df = StockDataFrame(bars_df.df)
-
-    hourly_df['ema:50']
-    hourly_df['ema:20']
-    hourly_df['rsi:20']
-    print(hourly_df)
-    return hourly_df
-
-def signalTrendfollowing():
+def signalTrendfollowing(dataframe):
     print("Signal for trend following")
+    df_index = dataframe.index[-1]
+    # print(dataframe)
+    # print(dataframe['ema:20'][df_index])
+    # print(dataframe['ema:50'][df_index])
+    # print(dataframe['rsi:20'][df_index])
+
+    #TODO: 
+    # 1. Create an order with stop loss and take profit
+    # 2. Loop this behaviour so that it can run all the time
+    if(dataframe['ema:20'][df_index] > dataframe['ema:50'][df_index] and dataframe['rsi:20'][df_index] > 45):
+        print("Buy")
+        bm.buySell('ETH/USD', 5, 30, dataframe['close'][df_index]-5)
+    else:
+        print("Not buy")
 
 def signalMeanReversion():
     print("Mean reversion")
 
-def bars_addition():
-    coin="ETH/USD"
-    daily_bars = bm.getHistory(currencies=[coin], frame="Day", timelength=3) # BarSet
-    latest_bar = bm.getLatestBar(coin=[coin]) #Dict
-    #Appending latest bar to the original data without changing it's structure
-    daily_bars_list = daily_bars.data[coin]
-    daily_bars_list.append(dict(latest_bar[coin])) # append on the end another element
-    # daily_bars_list.pop(-1) # Remove last element
-    print(daily_bars)
-    """
-    Managed to append latest bar data into the daily bars list, and for that to work I had to strip away the data.
-    Now I have to either append the data without striping or to re-encapsulate the data in what it had before.
-    """
-
 # fetchHourlyBars()
-fetchDailyBars()
+dataframe = fetchBars()
+signalTrendfollowing(dataframe)

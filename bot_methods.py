@@ -132,42 +132,40 @@ def getHistory(currencies=["ETH/USD"], timelength = 30, frame = "Week", stop=0, 
 
 ####################################        BUY/SELL Code       #################################### 
 
-def buySell():
-    from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest 
+def buySell(coin, quantity, limit_price, stop_price, buy=True):
+    #buying is true, selling is false
+    from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest, StopLossRequest
     from alpaca.trading.enums import OrderSide, TimeInForce
-    val_input = input("Buy or sell: ")
 
-    # preparing market order
-    market_order_data = MarketOrderRequest(
-        symbol="ETH",
-        qty=3,
-        side=OrderSide.BUY,
-        time_in_force=TimeInForce.IOC
-    )
-
-    # preparing a limit order
-    limit_order_data = LimitOrderRequest(
-        symbol="ETH",
-        limit_price=19,
-        qty=34,
-        side=OrderSide.SELL,
-        time_in_force=TimeInForce.GTC
-    )
-
-    if val_input == "buy":
-        LOGGER.info(f"buying {valInput}")
+    if(buy):
+        # preparing market order
+        market_order_data = MarketOrderRequest(
+            symbol=coin,
+            qty=quantity,
+            side=OrderSide.BUY,
+            time_in_force=TimeInForce.IOC)
+        LOGGER.info(f"buying {quantity} of {coin}")
         # sending an order
         market_order = TRADING_CLIENT.submit_order(
             order_data=market_order_data
         )
-    elif val_input == "sell":
-        print(f"Selling {valInput}")
+    elif(not buy):
+        # preparing a limit order
+        limit_order_data = LimitOrderRequest(
+            symbol=coin,
+            limit_price=limit,
+            qty=quantity,
+            side=OrderSide.SELL,
+            stop_loss=StopLossRequest(stop_price=stop_price),
+            time_in_force=TimeInForce.GTC
+        )
+        LOGGER.info(f"Selling {quantity} of {coin}")
         # submitting a limit order
         limit_order = TRADING_CLIENT.submit_order(
             order_data=limit_order_data
             )
     else:
-        print(f"Error: invalid input value - {val_input}")
+        LOGGER.error(f"Error")
 
 
 ####################################        Calculations         #################################### 
@@ -245,9 +243,10 @@ def makeAGraph(stockdf):
         layout_yaxis_range=[1500,2500]
     )
 
-    # fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
-    #                 marker=dict(size=5, color="MediumPurple"),
-    #                 name="entry")
+    if(dfpl['pointpos']):
+        fig.add_scatter(x=dfpl.index, y=dfpl['pointpos'], mode="markers",
+                    marker=dict(size=5, color="MediumPurple"),
+                    name="entry")
 
     fig.show()
 
