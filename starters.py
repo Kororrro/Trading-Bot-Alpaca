@@ -37,14 +37,10 @@ def fetchBars(frame="Day", timelength=55, coin="ETH/USD"):
 def signalTrendfollowing(dataframe):
     print("Signal for trend following")
     df_index = dataframe.index[-1]
-    # print(dataframe)
-    # print(dataframe['ema:20'][df_index])
-    # print(dataframe['ema:50'][df_index])
-    # print(dataframe['rsi:20'][df_index])
-
     #TODO: 
     # 1. Create an order with stop loss and take profit
     # 2. Loop this behaviour so that it can run all the time
+    # 3. Buy only a set amount of the stock. We don't want to throw all our money on one stock, do we? ;)
     if(dataframe['ema:20'][df_index] > dataframe['ema:50'][df_index] and dataframe['rsi:20'][df_index] > 45):
         print("Buy")
         bm.buySell('ETH/USD', 5, 30, dataframe['close'][df_index]-5)
